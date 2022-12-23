@@ -1,9 +1,10 @@
 const express = require('express');
-const { getUsers, createUser, login } = require('./methods');
+const { getUsers, createUser, login } = require('./controller');
+const { authMiddleware } = require('./middleware');
 
 const router = express.Router();
 
-router.get('/lists', (req, res) => {
+router.get('/lists', authMiddleware, (req, res) => {
     getUsers().then(users => {
         res.status(200).json(users);
     }).catch(err => {
@@ -24,10 +25,12 @@ router.post('/create', (req, res) => {
 router.post('/login', async (req, res) => {
     const { username, password } = req.body;
 
-    const sukses = await login(username, password);
-
-    if (sukses) res.status(200).json({message: 'Login berhasil!'});
-    else res.status(500).json({message: 'Username atau password salah'});
-})
+    login(username, password).then(token => {
+        if (token) res.status(200).json({accessToken: token});
+        else res.status(400).json({message: 'username atau password salah'});
+    }).catch(err => {
+        res.status(500).json({message: err.message});
+    });
+});
 
 module.exports = router;

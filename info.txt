@@ -1,3 +1,7 @@
 npx sequelize-cli model:generate --name User --attributes firstName:string
 
 npx sequelize-cli db:migrate
+
+openssl rand -base64 60
+
+eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7InVzZXJuYW1lIjoicmVpaGFuIiwiZW1haWwiOiJyZWloYW5AZW1haWwuY29tIn0sImlhdCI6MTY3MTc2NjEzNiwiZXhwIjoxNjcxNzY5NzM2fQ.PPRY5ytZZ3Gam2t2L3WfyAvDgxsmtMwfpmVpcUW2zoo
