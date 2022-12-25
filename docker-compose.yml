@@ -1,0 +1,25 @@
+services:
+  web_nodejs:
+    build: ./web_nodejs
+    command: npm start
+    volumes:
+      - ./web_nodejs:/usr/src/web_nodejs
+    ports:
+      - 3000:3000
+    env_file:
+      - ./.env
+    restart: always
+
+  mongodb:
+    image: mongo
+    env_file:
+      - ./.env
+    ports:
+      - 27017:27017
+    volumes:
+      - mongodb:/data/db
+      - mongodb_config:/data/configdb
+
+volumes:
+  mongodb:
+  mongodb_config:
