@@ -10,6 +10,17 @@ services:
       - ./.env
     restart: always
 
+  web_golang:
+    build: ./web_golang
+    command: air
+    volumes:
+      - ./web_golang:/usr/src/web_golang
+    ports:
+      - 3001:8080
+    env_file:
+      - ./.env
+    restart: always
+
   mongodb:
     image: mongo
     env_file:

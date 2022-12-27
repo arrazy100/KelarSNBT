@@ -52,7 +52,7 @@ const generateToken = (data) => {
 
     const token = jwt.sign({
         data: data
-    }, privateKey, { expiresIn: '1h', algorithm: 'RS256', issuer: 'auth_kelarsnbt' });
+    }, privateKey, { expiresIn: parseInt(process.env.TOKEN_EXPIRES), algorithm: process.env.JWT_ALGORITHM });
 
     return token;
 }
@@ -60,7 +60,7 @@ const generateToken = (data) => {
 const verifyToken = (token) => {
     const publicKey = fs.readFileSync(process.env.PUBLIC_KEY);
 
-    const decoded = jwt.verify(token, publicKey, {algorithms: ['RS256'], issuer: 'auth_kelarsnbt'});
+    const decoded = jwt.verify(token, publicKey, { algorithms: [process.env.JWT_ALGORITHM] });
 
     return decoded;
 }
