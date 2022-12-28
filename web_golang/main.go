@@ -2,58 +2,58 @@ package main
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
-	"net/http"
+	"log"
+	question_controllers "main/question/controllers"
+	question_routes "main/question/routes"
+	question_services "main/question/services"
 	"os"
 
+	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"go.mongodb.org/mongo-driver/mongo/readpref"
+)
+
+var (
+	server *gin.Engine
+
+	questionCollection      *mongo.Collection
+	questionService         question_services.QuestionService
+	questionController      question_controllers.QuestionController
+	questionRouteController question_routes.QuestionRouteController
 )
 
 func main() {
-	http.HandleFunc("/soal", requestHandler)
-	http.ListenAndServe(":8080", nil)
+	startGinServer()
 }
 
-func requestHandler(w http.ResponseWriter, req *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-	response := map[string]interface{}{}
-
-	ctx := context.Background()
+func init() {
+	ctx := context.TODO()
 
 	client, err := mongo.Connect(ctx, options.Client().ApplyURI(os.Getenv("MONGODB_CONNSTRING")))
 
 	if err != nil {
-		fmt.Println(err.Error())
+		panic(err)
 	}
 
-	collection := client.Database(os.Getenv("MONGO_DBNAME")).Collection("daftar_soal")
-
-	data := map[string]interface{}{}
-
-	err = json.NewDecoder(req.Body).Decode(&data)
-
-	if err != nil {
-		fmt.Println(err.Error())
+	if err := client.Ping(ctx, readpref.Primary()); err != nil {
+		panic(err)
 	}
 
-	switch req.Method {
-	case "GET":
-		response, err = getRecords(collection, ctx)
-	case "POST":
-		response, err = createRecord(collection, ctx, data)
-	}
+	fmt.Println("MongoDB successfully connected...")
 
-	if err != nil {
-		response = map[string]interface{}{"error": err.Error}
-	}
+	questionCollection = client.Database(os.Getenv("MONGO_DBNAME")).Collection("daftar_soal")
+	questionService = question_services.NewQuestionService(questionCollection, ctx)
+	questionController = question_controllers.NewQuestionController(questionService)
+	questionRouteController = question_routes.NewQuestionRouteController(questionController)
 
-	enc := json.NewEncoder(w)
-	enc.SetIndent("", "  ")
+	server = gin.Default()
+}
 
-	if err := enc.Encode(response); err != nil {
-		fmt.Println(err.Error())
-	}
+func startGinServer() {
+	router := server.Group("/api")
 
+	questionRouteController.QuestionRoute(router)
+	log.Fatal(server.Run(":8080"))
 }
