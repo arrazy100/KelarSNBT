@@ -131,3 +131,4 @@ dist
 .pnp.*
 
 web_nodejs/keys/*
+web_golang/tmp/*
