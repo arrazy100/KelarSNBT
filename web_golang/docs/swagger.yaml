@@ -57,6 +57,52 @@ definitions:
       question:
         type: string
     type: object
+  task_models.CreateTask:
+    properties:
+      end_date:
+        type: string
+      name:
+        type: string
+      start_date:
+        type: string
+    required:
+    - end_date
+    - name
+    - start_date
+    type: object
+  task_models.SetQuestion:
+    properties:
+      questions:
+        items:
+          type: string
+        type: array
+    required:
+    - questions
+    type: object
+  task_models.TaskDB:
+    properties:
+      end_date:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      questions:
+        items:
+          type: string
+        type: array
+      start_date:
+        type: string
+    type: object
+  task_models.UpdateTask:
+    properties:
+      end_date:
+        type: string
+      name:
+        type: string
+      start_date:
+        type: string
+    type: object
 host: localhost:3001
 info:
   contact:
@@ -140,6 +186,15 @@ paths:
       consumes:
       - application/json
       description: Get all available questions
+      parameters:
+      - description: write page number
+        in: query
+        name: page
+        type: integer
+      - description: write limit number
+        in: query
+        name: limit
+        type: integer
       produces:
       - application/json
       responses:
@@ -230,4 +285,133 @@ paths:
       summary: Edit a question
       tags:
       - question
+  /tasks:
+    get:
+      consumes:
+      - application/json
+      description: Get all available tasks
+      parameters:
+      - description: write page number
+        in: query
+        name: page
+        type: integer
+      - description: write limit number
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/task_models.TaskDB'
+            type: array
+      summary: get tasks
+      tags:
+      - task
+    post:
+      description: Create a new task for events
+      parameters:
+      - description: Task JSON
+        in: body
+        name: task
+        required: true
+        schema:
+          $ref: '#/definitions/task_models.CreateTask'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/task_models.TaskDB'
+      summary: create a new task
+      tags:
+      - task
+  /tasks/{taskId}:
+    delete:
+      description: Delete a task by id
+      parameters:
+      - description: Write task id
+        in: path
+        name: taskId
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+      summary: delete a task
+      tags:
+      - task
+    get:
+      consumes:
+      - application/json
+      description: Get task by id
+      parameters:
+      - description: Write task id
+        in: path
+        name: taskId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/task_models.TaskDB'
+      summary: get task by id
+      tags:
+      - task
+    patch:
+      description: Edit a task by id
+      parameters:
+      - description: Write task id
+        in: path
+        name: taskId
+        required: true
+        type: string
+      - description: Task JSON
+        in: body
+        name: task
+        required: true
+        schema:
+          $ref: '#/definitions/task_models.UpdateTask'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/task_models.TaskDB'
+      summary: Edit a task
+      tags:
+      - task
+  /tasks/setQuestions/{taskId}:
+    patch:
+      description: Set questions for a task by task id
+      parameters:
+      - description: write task id
+        in: path
+        name: taskId
+        required: true
+        type: string
+      - description: Task JSON
+        in: body
+        name: task
+        required: true
+        schema:
+          $ref: '#/definitions/task_models.SetQuestion'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/task_models.SetQuestion'
+      summary: set questions for a task
+      tags:
+      - task
 swagger: "2.0"

@@ -54,6 +54,8 @@ func (qc *QuestionController) Create(ctx *gin.Context) {
 // @Tags question
 // @Accept json
 // @Produce json
+// @Param page query int false "write page number"
+// @Param limit query int false "write limit number"
 // @Success 200 {array} question_models.QuestionDB
 // @Router /questions [get]
 func (qc *QuestionController) FindAll(ctx *gin.Context) {

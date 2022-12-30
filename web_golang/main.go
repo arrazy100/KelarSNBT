@@ -7,6 +7,9 @@ import (
 	question_controllers "main/question/controllers"
 	question_routes "main/question/routes"
 	question_services "main/question/services"
+	task_controllers "main/task/controllers"
+	task_routes "main/task/routes"
+	task_services "main/task/services"
 	"os"
 
 	"github.com/gin-gonic/gin"
@@ -27,6 +30,11 @@ var (
 	questionService         question_services.QuestionService
 	questionController      question_controllers.QuestionController
 	questionRouteController question_routes.QuestionRouteController
+
+	taskCollection      *mongo.Collection
+	taskService         task_services.TaskService
+	taskController      task_controllers.TaskController
+	taskRouteController task_routes.TaskRouteController
 )
 
 // @title           Kelar SNBT
@@ -67,6 +75,11 @@ func init() {
 	questionController = question_controllers.NewQuestionController(questionService)
 	questionRouteController = question_routes.NewQuestionRouteController(questionController)
 
+	taskCollection = client.Database(os.Getenv("MONGO_DBNAME")).Collection("daftar_tugas")
+	taskService = task_services.NewTaskService(taskCollection, ctx)
+	taskController = task_controllers.NewTaskController(taskService)
+	taskRouteController = task_routes.NewTaskRouteController(taskController)
+
 	server = gin.Default()
 }
 
@@ -75,6 +88,7 @@ func startGinServer() {
 
 	questionRouteController.QuestionRoute(router)
 	questionRouteController.AnswerRoute(router)
+	taskRouteController.TaskRoute(router)
 
 	docs.SwaggerInfo.BasePath = "/api/"
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
