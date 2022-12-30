@@ -13,6 +13,11 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
+
+	docs "main/docs"
+
+	swaggerfiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
 var (
@@ -24,6 +29,20 @@ var (
 	questionRouteController question_routes.QuestionRouteController
 )
 
+// @title           Kelar SNBT
+// @version         1.0
+// @description     No Description
+// @termsOfService  https://tos.kelarsnbt.com
+
+// @contact.name   Muhammad Afdhal Arrazy
+// @contact.url    https://github.com/arrazy100
+// @contact.email  afdhalarrazy111@gmail.com
+
+// @license.name  Apache 2.0
+// @license.url   http://www.apache.org/licenses/LICENSE-2.0.html
+
+// @host      localhost:3001
+// @BasePath  /api/
 func main() {
 	startGinServer()
 }
@@ -55,5 +74,10 @@ func startGinServer() {
 	router := server.Group("/api")
 
 	questionRouteController.QuestionRoute(router)
+	questionRouteController.AnswerRoute(router)
+
+	docs.SwaggerInfo.BasePath = "/api/"
+	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
+
 	log.Fatal(server.Run(":8080"))
 }

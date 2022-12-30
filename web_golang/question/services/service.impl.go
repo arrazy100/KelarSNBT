@@ -21,12 +21,6 @@ func NewQuestionService(questionCollection *mongo.Collection, ctx context.Contex
 }
 
 func (q *QuestionServiceImpl) Create(question *question_models.CreateQuestion) (*question_models.QuestionDB, error) {
-	for i, attr := range question.Answers {
-		if attr.Id.IsZero() {
-			question.Answers[i].Id = primitive.NewObjectID()
-		}
-	}
-
 	res, err := q.questionCollection.InsertOne(q.ctx, question)
 
 	if err != nil {
@@ -125,12 +119,6 @@ func (q *QuestionServiceImpl) Delete(id string) error {
 }
 
 func (q *QuestionServiceImpl) Update(id string, data *question_models.UpdateQuestion) (*question_models.QuestionDB, error) {
-	for i, attr := range data.Answers {
-		if attr.Id.IsZero() {
-			data.Answers[i].Id = primitive.NewObjectID()
-		}
-	}
-
 	var doc interface{} = &data
 
 	obId, _ := primitive.ObjectIDFromHex(id)

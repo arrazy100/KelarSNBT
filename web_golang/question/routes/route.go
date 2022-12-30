@@ -22,8 +22,12 @@ func (qrc *QuestionRouteController) QuestionRoute(qr *gin.RouterGroup) {
 	router.POST("/", qrc.questionController.Create)
 	router.PATCH("/:questionId", qrc.questionController.Update)
 	router.DELETE("/:questionId", qrc.questionController.Delete)
+}
 
-	router.POST("/createAnswer/:questionId", qrc.questionController.CreateAnswer)
-	router.PATCH("/updateAnswer/:questionId", qrc.questionController.UpdateAnswer)
-	router.DELETE("/deleteAnswer/:answerId", qrc.questionController.DeleteAnswer)
+func (qrc *QuestionRouteController) AnswerRoute(qr *gin.RouterGroup) {
+	router := qr.Group("/answers/")
+
+	router.POST("/:questionId", qrc.questionController.CreateAnswer)
+	router.PATCH("/:questionId", qrc.questionController.UpdateAnswer)
+	router.DELETE("/:answerId", qrc.questionController.DeleteAnswer)
 }

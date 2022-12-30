@@ -27,14 +27,11 @@ type QuestionDB struct {
 }
 
 type CreateQuestion struct {
-	Materi   int        `json:"materi" bson:"materi" binding:"required"`
-	Question string     `json:"question" bson:"question" binding:"required"`
-	Answers  []AnswerDB `json:"answers,omitempty" bson:"answers,omitempty"`
+	Materi   int    `json:"materi" bson:"materi" binding:"required"`
+	Question string `json:"question" bson:"question" binding:"required"`
 }
 
 type UpdateQuestion struct {
-	Id       primitive.ObjectID `json:"id,omitempty" bson:"_id,omitempty"`
-	Materi   int                `json:"materi,omitempty" bson:"materi,omitempty"`
-	Question string             `json:"question,omitempty" bson:"question,omitempty"`
-	Answers  []AnswerDB         `json:"answers,omitempty" bson:"answers,omitempty"`
+	Materi   int    `json:"materi,omitempty" bson:"materi,omitempty"`
+	Question string `json:"question,omitempty" bson:"question,omitempty"`
 }

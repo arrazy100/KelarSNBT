@@ -1,0 +1,233 @@
+basePath: /api/
+definitions:
+  question_models.AnswerDB:
+    properties:
+      content:
+        type: string
+      correct_answer:
+        type: boolean
+      id:
+        type: string
+    type: object
+  question_models.CreateAnswer:
+    properties:
+      content:
+        type: string
+      correct_answer:
+        type: boolean
+    required:
+    - content
+    type: object
+  question_models.CreateQuestion:
+    properties:
+      materi:
+        type: integer
+      question:
+        type: string
+    required:
+    - materi
+    - question
+    type: object
+  question_models.QuestionDB:
+    properties:
+      answers:
+        items:
+          $ref: '#/definitions/question_models.AnswerDB'
+        type: array
+      id:
+        type: string
+      materi:
+        type: integer
+      question:
+        type: string
+    type: object
+  question_models.UpdateAnswer:
+    properties:
+      content:
+        type: string
+      correct_answer:
+        type: boolean
+      id:
+        type: string
+    type: object
+  question_models.UpdateQuestion:
+    properties:
+      materi:
+        type: integer
+      question:
+        type: string
+    type: object
+host: localhost:3001
+info:
+  contact:
+    email: afdhalarrazy111@gmail.com
+    name: Muhammad Afdhal Arrazy
+    url: https://github.com/arrazy100
+  description: No Description
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: https://tos.kelarsnbt.com
+  title: Kelar SNBT
+  version: "1.0"
+paths:
+  /answers/{answerId}:
+    delete:
+      description: Delete an answer by id
+      parameters:
+      - description: Write answer id
+        in: path
+        name: answerId
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+      summary: delete an answer
+      tags:
+      - answer
+  /answers/{questionId}:
+    patch:
+      description: Edit an answer by question id
+      parameters:
+      - description: Write question id
+        in: path
+        name: questionId
+        required: true
+        type: string
+      - description: Answer JSON
+        in: body
+        name: question
+        required: true
+        schema:
+          $ref: '#/definitions/question_models.UpdateAnswer'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/question_models.QuestionDB'
+      summary: Edit an answer
+      tags:
+      - answer
+    post:
+      description: Add an answer to a question
+      parameters:
+      - description: write question id
+        in: path
+        name: questionId
+        required: true
+        type: string
+      - description: Answer JSON
+        in: body
+        name: answer
+        required: true
+        schema:
+          $ref: '#/definitions/question_models.CreateAnswer'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/question_models.AnswerDB'
+      summary: add answer to a question
+      tags:
+      - answer
+  /questions:
+    get:
+      consumes:
+      - application/json
+      description: Get all available questions
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/question_models.QuestionDB'
+            type: array
+      summary: get questions
+      tags:
+      - question
+    post:
+      description: Create a new question to choose for Task
+      parameters:
+      - description: Question JSON
+        in: body
+        name: question
+        required: true
+        schema:
+          $ref: '#/definitions/question_models.CreateQuestion'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/question_models.QuestionDB'
+      summary: create a new question
+      tags:
+      - question
+  /questions/{questionId}:
+    delete:
+      description: Delete a question by id
+      parameters:
+      - description: Write question id
+        in: path
+        name: questionId
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+      summary: delete a question
+      tags:
+      - question
+    get:
+      consumes:
+      - application/json
+      description: Get question by id
+      parameters:
+      - description: Write question id
+        in: path
+        name: questionId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/question_models.QuestionDB'
+      summary: get question by id
+      tags:
+      - question
+    patch:
+      description: Edit a question by id
+      parameters:
+      - description: Write question id
+        in: path
+        name: questionId
+        required: true
+        type: string
+      - description: Question JSON
+        in: body
+        name: question
+        required: true
+        schema:
+          $ref: '#/definitions/question_models.UpdateQuestion'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/question_models.QuestionDB'
+      summary: Edit a question
+      tags:
+      - question
+swagger: "2.0"
