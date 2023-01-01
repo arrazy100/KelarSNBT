@@ -1,24 +1,19 @@
 package question
 
 import (
-	crud_controllers "main/crud/controllers"
-	crud_services "main/crud/services"
+	"main/crud_generics"
 	"net/http"
 	"strings"
 
 	"github.com/gin-gonic/gin"
 )
 
-type QuestionController struct {
-	crudService    crud_services.CRUDService
-	CrudController crud_controllers.CRUDController
+type QuestionController[T any] struct {
+	genericController crud_generics.CRUDControllerRepo[T]
 }
 
-func NewQuestionController(param crud_services.Param, name string, singleName string) QuestionController {
-	crudService := crud_services.NewCRUDService(param)
-	crudController := crud_controllers.NewCRUDController(crudService, name, singleName)
-
-	return QuestionController{crudService, crudController}
+func NewQuestionController[T any](genericController crud_generics.CRUDControllerRepo[T]) QuestionController[T] {
+	return QuestionController[T]{genericController}
 }
 
 // GetQuestions godoc
@@ -32,8 +27,8 @@ func NewQuestionController(param crud_services.Param, name string, singleName st
 // @Param limit query int false "write limit number"
 // @Success 200 {array} QuestionDB
 // @Router /questions [get]
-func (c *QuestionController) FindAll(ctx *gin.Context) {
-	c.CrudController.FindAll(ctx)
+func (repo *QuestionController[T]) FindAll(ctx *gin.Context) {
+	repo.genericController.FindAll(ctx)
 }
 
 // GetQuestionById godoc
@@ -46,8 +41,8 @@ func (c *QuestionController) FindAll(ctx *gin.Context) {
 // @Param questionId path string true "Write question id"
 // @Success 200 {object} QuestionDB
 // @Router /questions/{questionId} [get]
-func (c *QuestionController) FindById(ctx *gin.Context) {
-	c.CrudController.FindById(ctx)
+func (repo *QuestionController[T]) FindById(ctx *gin.Context) {
+	repo.genericController.FindById(ctx)
 }
 
 // PostQuestion godoc
@@ -59,8 +54,8 @@ func (c *QuestionController) FindById(ctx *gin.Context) {
 // @Param question body CreateQuestion true "Question JSON"
 // @Success 200 {object} QuestionDB
 // @Router /questions [post]
-func (c *QuestionController) Create(ctx *gin.Context) {
-	c.CrudController.Create(ctx)
+func (repo *QuestionController[T]) Create(ctx *gin.Context) {
+	repo.genericController.Create(ctx)
 }
 
 // PatchQuestion godoc
@@ -73,8 +68,8 @@ func (c *QuestionController) Create(ctx *gin.Context) {
 // @Param question body UpdateQuestion true "Question JSON"
 // @Success 200 {object} QuestionDB
 // @Router /questions/{questionId} [patch]
-func (c *QuestionController) Update(ctx *gin.Context) {
-	c.CrudController.Update(ctx)
+func (repo *QuestionController[T]) Update(ctx *gin.Context) {
+	repo.genericController.Update(ctx)
 }
 
 // DeleteQuestion godoc
@@ -85,8 +80,8 @@ func (c *QuestionController) Update(ctx *gin.Context) {
 // @Param questionId path string true "Write question id"
 // @Success 204
 // @Router /questions/{questionId} [delete]
-func (c *QuestionController) Delete(ctx *gin.Context) {
-	c.CrudController.Delete(ctx)
+func (repo *QuestionController[T]) Delete(ctx *gin.Context) {
+	repo.genericController.Delete(ctx)
 }
 
 // PostAnswer godoc
@@ -99,7 +94,7 @@ func (c *QuestionController) Delete(ctx *gin.Context) {
 // @Param answer body CreateAnswer true "Answer JSON"
 // @Success 200 {object} AnswerDB
 // @Router /answers/{questionId} [post]
-func (qc *QuestionController) CreateAnswer(ctx *gin.Context) {
+func (repo *QuestionController[T]) CreateAnswer(ctx *gin.Context) {
 	questionId := ctx.Param("questionId")
 
 	var answer *CreateAnswer
@@ -109,8 +104,7 @@ func (qc *QuestionController) CreateAnswer(ctx *gin.Context) {
 		return
 	}
 
-	param := qc.crudService.GetParameter()
-	updatedQuestion, err := CreateAnswerService(param.Collection, param.Ctx, questionId, answer)
+	updatedQuestion, err := CreateAnswerService(repo.genericController.GetCollection(), repo.genericController.GetContext(), questionId, answer)
 
 	if err != nil {
 		if strings.Contains(err.Error(), "not exists") {
@@ -137,7 +131,7 @@ func (qc *QuestionController) CreateAnswer(ctx *gin.Context) {
 // @Param question body UpdateAnswer true "Answer JSON"
 // @Success 200 {object} QuestionDB
 // @Router /answers/{questionId} [patch]
-func (qc *QuestionController) UpdateAnswer(ctx *gin.Context) {
+func (repo *QuestionController[T]) UpdateAnswer(ctx *gin.Context) {
 	questionId := ctx.Param("questionId")
 
 	var answer *UpdateAnswer
@@ -147,8 +141,7 @@ func (qc *QuestionController) UpdateAnswer(ctx *gin.Context) {
 		return
 	}
 
-	param := qc.crudService.GetParameter()
-	updatedQuestion, err := UpdateAnswerService(param.Collection, param.Ctx, questionId, answer)
+	updatedQuestion, err := UpdateAnswerService(repo.genericController.GetCollection(), repo.genericController.GetContext(), questionId, answer)
 
 	if err != nil {
 		if strings.Contains(err.Error(), "not exists") {
@@ -173,11 +166,10 @@ func (qc *QuestionController) UpdateAnswer(ctx *gin.Context) {
 // @Param answerId path string true "Write answer id"
 // @Success 204
 // @Router /answers/{answerId} [delete]
-func (qc *QuestionController) DeleteAnswer(ctx *gin.Context) {
+func (repo *QuestionController[T]) DeleteAnswer(ctx *gin.Context) {
 	answerId := ctx.Param("answerId")
 
-	param := qc.crudService.GetParameter()
-	err := DeleteAnswerService(param.Collection, param.Ctx, answerId)
+	err := DeleteAnswerService(repo.genericController.GetCollection(), repo.genericController.GetContext(), answerId)
 
 	if err != nil {
 		ctx.JSON(http.StatusBadGateway, gin.H{"status": "fail", "message": err.Error()})

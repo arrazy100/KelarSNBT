@@ -1,24 +1,19 @@
 package task
 
 import (
-	crud_controllers "main/crud/controllers"
-	crud_services "main/crud/services"
+	"main/crud_generics"
 	"net/http"
 	"strings"
 
 	"github.com/gin-gonic/gin"
 )
 
-type TaskController struct {
-	crudService    crud_services.CRUDService
-	CrudController crud_controllers.CRUDController
+type TaskController[T any] struct {
+	genericController crud_generics.CRUDControllerRepo[T]
 }
 
-func NewTaskController(param crud_services.Param, name string, singleName string) TaskController {
-	crudService := crud_services.NewCRUDService(param)
-	crudController := crud_controllers.NewCRUDController(crudService, name, singleName)
-
-	return TaskController{crudService, crudController}
+func NewTaskController[T any](genericController crud_generics.CRUDControllerRepo[T]) TaskController[T] {
+	return TaskController[T]{genericController}
 }
 
 // GetTasks godoc
@@ -32,8 +27,8 @@ func NewTaskController(param crud_services.Param, name string, singleName string
 // @Param limit query int false "write limit number"
 // @Success 200 {array} TaskDB
 // @Router /tasks [get]
-func (c *TaskController) FindAll(ctx *gin.Context) {
-	c.CrudController.FindAll(ctx)
+func (repo *TaskController[T]) FindAll(ctx *gin.Context) {
+	repo.genericController.FindAll(ctx)
 }
 
 // GetTaskById godoc
@@ -46,8 +41,8 @@ func (c *TaskController) FindAll(ctx *gin.Context) {
 // @Param taskId path string true "Write task id"
 // @Success 200 {object} TaskDB
 // @Router /tasks/{taskId} [get]
-func (c *TaskController) FindById(ctx *gin.Context) {
-	c.CrudController.FindById(ctx)
+func (repo *TaskController[T]) FindById(ctx *gin.Context) {
+	repo.genericController.FindById(ctx)
 }
 
 // PostTask godoc
@@ -59,8 +54,8 @@ func (c *TaskController) FindById(ctx *gin.Context) {
 // @Param task body CreateTask true "Task JSON"
 // @Success 200 {object} TaskDB
 // @Router /tasks [post]
-func (c *TaskController) Create(ctx *gin.Context) {
-	c.CrudController.Create(ctx)
+func (repo *TaskController[T]) Create(ctx *gin.Context) {
+	repo.genericController.Create(ctx)
 }
 
 // PatchTask godoc
@@ -73,8 +68,8 @@ func (c *TaskController) Create(ctx *gin.Context) {
 // @Param task body UpdateTask true "Task JSON"
 // @Success 200 {object} TaskDB
 // @Router /tasks/{taskId} [patch]
-func (c *TaskController) Update(ctx *gin.Context) {
-	c.CrudController.Update(ctx)
+func (repo *TaskController[T]) Update(ctx *gin.Context) {
+	repo.genericController.Update(ctx)
 }
 
 // DeleteTask godoc
@@ -85,8 +80,8 @@ func (c *TaskController) Update(ctx *gin.Context) {
 // @Param taskId path string true "Write task id"
 // @Success 204
 // @Router /tasks/{taskId} [delete]
-func (c *TaskController) Delete(ctx *gin.Context) {
-	c.CrudController.Delete(ctx)
+func (repo *TaskController[T]) Delete(ctx *gin.Context) {
+	repo.genericController.Delete(ctx)
 }
 
 // SetQuestionsToTask godoc
@@ -99,7 +94,7 @@ func (c *TaskController) Delete(ctx *gin.Context) {
 // @Param task body SetQuestion true "Task JSON"
 // @Success 200 {object} SetQuestion
 // @Router /tasks/setQuestions/{taskId} [patch]
-func (c *TaskController) SetQuestions(ctx *gin.Context) {
+func (repo *TaskController[T]) SetQuestions(ctx *gin.Context) {
 	taskId := ctx.Param("taskId")
 
 	var questions *SetQuestion
@@ -109,8 +104,7 @@ func (c *TaskController) SetQuestions(ctx *gin.Context) {
 		return
 	}
 
-	param := c.crudService.GetParameter()
-	updatedTask, err := SetQuestionsService(param.Collection, param.Ctx, taskId, questions)
+	updatedTask, err := SetQuestionsService(repo.genericController.GetCollection(), repo.genericController.GetContext(), taskId, questions)
 
 	if err != nil {
 		if strings.Contains(err.Error(), "not exists") {

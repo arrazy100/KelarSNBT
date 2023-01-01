@@ -2,22 +2,22 @@ package task
 
 import "github.com/gin-gonic/gin"
 
-type TaskRouteController struct {
-	taskController TaskController
+type TaskRouteController[T any] struct {
+	taskController TaskController[T]
 }
 
-func NewTaskRouteController(taskController TaskController) TaskRouteController {
-	return TaskRouteController{taskController}
+func NewTaskRouteController[T any](taskController TaskController[T]) TaskRouteController[T] {
+	return TaskRouteController[T]{taskController}
 }
 
-func (trc *TaskRouteController) TaskRoute(tr *gin.RouterGroup) {
+func (repo *TaskRouteController[T]) Route(tr *gin.RouterGroup) {
 	router := tr.Group("/tasks")
 
-	router.GET("/", trc.taskController.FindAll)
-	router.GET("/:taskId", trc.taskController.FindById)
-	router.POST("/", trc.taskController.Create)
-	router.PATCH("/:taskId", trc.taskController.Update)
-	router.DELETE("/:taskId", trc.taskController.Delete)
+	router.GET("/", repo.taskController.FindAll)
+	router.GET("/:taskId", repo.taskController.FindById)
+	router.POST("/", repo.taskController.Create)
+	router.PATCH("/:taskId", repo.taskController.Update)
+	router.DELETE("/:taskId", repo.taskController.Delete)
 
-	router.PATCH("/setQuestions/:taskId", trc.taskController.SetQuestions)
+	router.PATCH("/setQuestions/:taskId", repo.taskController.SetQuestions)
 }

@@ -2,7 +2,7 @@ package task
 
 import (
 	"context"
-	crud_services "main/crud/services"
+	"main/crud_generics"
 	"os"
 
 	"github.com/gin-gonic/gin"
@@ -10,25 +10,31 @@ import (
 )
 
 var (
-	taskCollection      *mongo.Collection
-	taskParam           crud_services.Param
-	taskController      TaskController
-	taskRouteController TaskRouteController
+	collection          *mongo.Collection
+	controller          crud_generics.CRUDControllerRepo[TaskDB]
+	taskController      TaskController[TaskDB]
+	taskRouteController TaskRouteController[TaskDB]
 )
 
 func Init(client *mongo.Client, ctx context.Context) {
-	taskCollection = client.Database(os.Getenv("MONGO_DBNAME")).Collection("daftar_tugas")
-	taskParam = crud_services.Param{
-		Collection:  taskCollection,
-		Ctx:         ctx,
-		ResultModel: TaskDB{},
-		CreateModel: CreateTask{},
-		UpdateModel: UpdateTask{},
-	}
-	taskController = NewTaskController(taskParam, "tasks", "task")
+	collection = client.Database(os.Getenv("MONGO_DBNAME")).Collection("daftar_tugas")
+	controller = crud_generics.NewCRUDControllerRepo[TaskDB](
+		collection,
+		ctx,
+		"tasks",
+		"task",
+		func() interface{} {
+			return &CreateTask{}
+		},
+		func() interface{} {
+			return &UpdateTask{}
+		},
+	)
+
+	taskController = NewTaskController(controller)
 	taskRouteController = NewTaskRouteController(taskController)
 }
 
 func RouteInit(router *gin.RouterGroup) {
-	taskRouteController.TaskRoute(router)
+	taskRouteController.Route(router)
 }

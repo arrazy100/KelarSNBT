@@ -103,85 +103,6 @@ definitions:
       start_date:
         type: string
     type: object
-  task_models.CreateTask:
-    properties:
-      end_date:
-        type: string
-      name:
-        type: string
-      start_date:
-        type: string
-    required:
-    - end_date
-    - name
-    - start_date
-    type: object
-  task_models.SetQuestion:
-    properties:
-      questions:
-        items:
-          type: string
-        type: array
-    required:
-    - questions
-    type: object
-  task_models.TaskDB:
-    properties:
-      end_date:
-        type: string
-      id:
-        type: string
-      name:
-        type: string
-      questions:
-        items:
-          type: string
-        type: array
-      start_date:
-        type: string
-    type: object
-  task_models.UpdateTask:
-    properties:
-      end_date:
-        type: string
-      name:
-        type: string
-      start_date:
-        type: string
-    type: object
-  test.CreateTest:
-    properties:
-      email:
-        type: string
-      name:
-        type: string
-      password:
-        type: string
-    required:
-    - email
-    - name
-    - password
-    type: object
-  test.TestDB:
-    properties:
-      email:
-        type: string
-      id:
-        type: string
-      name:
-        type: string
-      password:
-        type: string
-    type: object
-  test.UpdateTest:
-    properties:
-      email:
-        type: string
-      name:
-        type: string
-      password:
-        type: string
-    type: object
 host: localhost:3001
 info:
   contact:
@@ -385,7 +306,7 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/task_models.TaskDB'
+              $ref: '#/definitions/task.TaskDB'
             type: array
       summary: get tasks
       tags:
@@ -398,14 +319,14 @@ paths:
         name: task
         required: true
         schema:
-          $ref: '#/definitions/task_models.CreateTask'
+          $ref: '#/definitions/task.CreateTask'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/task_models.TaskDB'
+            $ref: '#/definitions/task.TaskDB'
       summary: create a new task
       tags:
       - task
@@ -440,7 +361,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/task_models.TaskDB'
+            $ref: '#/definitions/task.TaskDB'
       summary: get task by id
       tags:
       - task
@@ -457,14 +378,14 @@ paths:
         name: task
         required: true
         schema:
-          $ref: '#/definitions/task_models.UpdateTask'
+          $ref: '#/definitions/task.UpdateTask'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/task_models.TaskDB'
+            $ref: '#/definitions/task.TaskDB'
       summary: Edit a task
       tags:
       - task
@@ -482,119 +403,15 @@ paths:
         name: task
         required: true
         schema:
-          $ref: '#/definitions/task_models.SetQuestion'
+          $ref: '#/definitions/task.SetQuestion'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/task_models.SetQuestion'
+            $ref: '#/definitions/task.SetQuestion'
       summary: set questions for a task
       tags:
       - task
-  /tests:
-    get:
-      consumes:
-      - application/json
-      description: Get all available tests
-      parameters:
-      - description: write page number
-        in: query
-        name: page
-        type: integer
-      - description: write limit number
-        in: query
-        name: limit
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/test.TestDB'
-            type: array
-      summary: get tests
-      tags:
-      - test
-    post:
-      description: Create a new test
-      parameters:
-      - description: Task JSON
-        in: body
-        name: test
-        required: true
-        schema:
-          $ref: '#/definitions/test.CreateTest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/test.TestDB'
-      summary: create a new test
-      tags:
-      - test
-  /tests/{testId}:
-    delete:
-      description: Delete a test by id
-      parameters:
-      - description: Write test id
-        in: path
-        name: testId
-        required: true
-        type: string
-      responses:
-        "204":
-          description: No Content
-      summary: delete a test
-      tags:
-      - test
-    get:
-      consumes:
-      - application/json
-      description: Get test by id
-      parameters:
-      - description: Write test id
-        in: path
-        name: testId
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/test.TestDB'
-      summary: get test by id
-      tags:
-      - test
-    patch:
-      description: Edit a test by id
-      parameters:
-      - description: Write test id
-        in: path
-        name: testId
-        required: true
-        type: string
-      - description: Test JSON
-        in: body
-        name: test
-        required: true
-        schema:
-          $ref: '#/definitions/test.UpdateTest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/test.TestDB'
-      summary: Edit a test
-      tags:
-      - test
 swagger: "2.0"

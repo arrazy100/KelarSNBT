@@ -2,7 +2,7 @@ package question
 
 import (
 	"context"
-	crud_services "main/crud/services"
+	"main/crud_generics"
 	"os"
 
 	"github.com/gin-gonic/gin"
@@ -10,22 +10,28 @@ import (
 )
 
 var (
-	questionCollection      *mongo.Collection
-	questionParam           crud_services.Param
-	questionController      QuestionController
-	questionRouteController QuestionRouteController
+	collection              *mongo.Collection
+	controller              crud_generics.CRUDControllerRepo[QuestionDB]
+	questionController      QuestionController[QuestionDB]
+	questionRouteController QuestionRouteController[QuestionDB]
 )
 
 func Init(client *mongo.Client, ctx context.Context) {
-	questionCollection = client.Database(os.Getenv("MONGO_DBNAME")).Collection("daftar_soal")
-	questionParam = crud_services.Param{
-		Collection:  questionCollection,
-		Ctx:         ctx,
-		ResultModel: QuestionDB{},
-		CreateModel: CreateQuestion{},
-		UpdateModel: UpdateQuestion{},
-	}
-	questionController = NewQuestionController(questionParam, "questions", "question")
+	collection = client.Database(os.Getenv("MONGO_DBNAME")).Collection("daftar_soal")
+	controller = crud_generics.NewCRUDControllerRepo[QuestionDB](
+		collection,
+		ctx,
+		"questions",
+		"question",
+		func() interface{} {
+			return &CreateQuestion{}
+		},
+		func() interface{} {
+			return &UpdateQuestion{}
+		},
+	)
+
+	questionController = NewQuestionController(controller)
 	questionRouteController = NewQuestionRouteController(questionController)
 }
 

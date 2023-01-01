@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"main/question"
 	"main/task"
+	"main/test_generics"
 	"os"
 
 	"github.com/gin-gonic/gin"
@@ -34,6 +35,7 @@ func init() {
 
 	question.Init(client, ctx)
 	task.Init(client, ctx)
+	test_generics.Init(client, ctx)
 
 	server = gin.Default()
 }
