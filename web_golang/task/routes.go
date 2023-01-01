@@ -1,16 +1,12 @@
-package task_routes
+package task
 
-import (
-	task_controllers "main/task/controllers"
-
-	"github.com/gin-gonic/gin"
-)
+import "github.com/gin-gonic/gin"
 
 type TaskRouteController struct {
-	taskController task_controllers.TaskController
+	taskController TaskController
 }
 
-func NewTaskRouteController(taskController task_controllers.TaskController) TaskRouteController {
+func NewTaskRouteController(taskController TaskController) TaskRouteController {
 	return TaskRouteController{taskController}
 }
 

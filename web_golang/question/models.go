@@ -1,4 +1,4 @@
-package question_models
+package question
 
 import "go.mongodb.org/mongo-driver/bson/primitive"
 

@@ -1,6 +1,6 @@
 basePath: /api/
 definitions:
-  question_models.AnswerDB:
+  question.AnswerDB:
     properties:
       content:
         type: string
@@ -9,7 +9,7 @@ definitions:
       id:
         type: string
     type: object
-  question_models.CreateAnswer:
+  question.CreateAnswer:
     properties:
       content:
         type: string
@@ -18,7 +18,7 @@ definitions:
     required:
     - content
     type: object
-  question_models.CreateQuestion:
+  question.CreateQuestion:
     properties:
       materi:
         type: integer
@@ -28,11 +28,11 @@ definitions:
     - materi
     - question
     type: object
-  question_models.QuestionDB:
+  question.QuestionDB:
     properties:
       answers:
         items:
-          $ref: '#/definitions/question_models.AnswerDB'
+          $ref: '#/definitions/question.AnswerDB'
         type: array
       id:
         type: string
@@ -41,7 +41,7 @@ definitions:
       question:
         type: string
     type: object
-  question_models.UpdateAnswer:
+  question.UpdateAnswer:
     properties:
       content:
         type: string
@@ -50,11 +50,57 @@ definitions:
       id:
         type: string
     type: object
-  question_models.UpdateQuestion:
+  question.UpdateQuestion:
     properties:
       materi:
         type: integer
       question:
+        type: string
+    type: object
+  task.CreateTask:
+    properties:
+      end_date:
+        type: string
+      name:
+        type: string
+      start_date:
+        type: string
+    required:
+    - end_date
+    - name
+    - start_date
+    type: object
+  task.SetQuestion:
+    properties:
+      questions:
+        items:
+          type: string
+        type: array
+    required:
+    - questions
+    type: object
+  task.TaskDB:
+    properties:
+      end_date:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      questions:
+        items:
+          type: string
+        type: array
+      start_date:
+        type: string
+    type: object
+  task.UpdateTask:
+    properties:
+      end_date:
+        type: string
+      name:
+        type: string
+      start_date:
         type: string
     type: object
   task_models.CreateTask:
@@ -103,6 +149,39 @@ definitions:
       start_date:
         type: string
     type: object
+  test.CreateTest:
+    properties:
+      email:
+        type: string
+      name:
+        type: string
+      password:
+        type: string
+    required:
+    - email
+    - name
+    - password
+    type: object
+  test.TestDB:
+    properties:
+      email:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      password:
+        type: string
+    type: object
+  test.UpdateTest:
+    properties:
+      email:
+        type: string
+      name:
+        type: string
+      password:
+        type: string
+    type: object
 host: localhost:3001
 info:
   contact:
@@ -146,14 +225,14 @@ paths:
         name: question
         required: true
         schema:
-          $ref: '#/definitions/question_models.UpdateAnswer'
+          $ref: '#/definitions/question.UpdateAnswer'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/question_models.QuestionDB'
+            $ref: '#/definitions/question.QuestionDB'
       summary: Edit an answer
       tags:
       - answer
@@ -170,14 +249,14 @@ paths:
         name: answer
         required: true
         schema:
-          $ref: '#/definitions/question_models.CreateAnswer'
+          $ref: '#/definitions/question.CreateAnswer'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/question_models.AnswerDB'
+            $ref: '#/definitions/question.AnswerDB'
       summary: add answer to a question
       tags:
       - answer
@@ -202,7 +281,7 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/question_models.QuestionDB'
+              $ref: '#/definitions/question.QuestionDB'
             type: array
       summary: get questions
       tags:
@@ -215,14 +294,14 @@ paths:
         name: question
         required: true
         schema:
-          $ref: '#/definitions/question_models.CreateQuestion'
+          $ref: '#/definitions/question.CreateQuestion'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/question_models.QuestionDB'
+            $ref: '#/definitions/question.QuestionDB'
       summary: create a new question
       tags:
       - question
@@ -257,7 +336,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/question_models.QuestionDB'
+            $ref: '#/definitions/question.QuestionDB'
       summary: get question by id
       tags:
       - question
@@ -274,14 +353,14 @@ paths:
         name: question
         required: true
         schema:
-          $ref: '#/definitions/question_models.UpdateQuestion'
+          $ref: '#/definitions/question.UpdateQuestion'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/question_models.QuestionDB'
+            $ref: '#/definitions/question.QuestionDB'
       summary: Edit a question
       tags:
       - question
@@ -414,4 +493,108 @@ paths:
       summary: set questions for a task
       tags:
       - task
+  /tests:
+    get:
+      consumes:
+      - application/json
+      description: Get all available tests
+      parameters:
+      - description: write page number
+        in: query
+        name: page
+        type: integer
+      - description: write limit number
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/test.TestDB'
+            type: array
+      summary: get tests
+      tags:
+      - test
+    post:
+      description: Create a new test
+      parameters:
+      - description: Task JSON
+        in: body
+        name: test
+        required: true
+        schema:
+          $ref: '#/definitions/test.CreateTest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/test.TestDB'
+      summary: create a new test
+      tags:
+      - test
+  /tests/{testId}:
+    delete:
+      description: Delete a test by id
+      parameters:
+      - description: Write test id
+        in: path
+        name: testId
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+      summary: delete a test
+      tags:
+      - test
+    get:
+      consumes:
+      - application/json
+      description: Get test by id
+      parameters:
+      - description: Write test id
+        in: path
+        name: testId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/test.TestDB'
+      summary: get test by id
+      tags:
+      - test
+    patch:
+      description: Edit a test by id
+      parameters:
+      - description: Write test id
+        in: path
+        name: testId
+        required: true
+        type: string
+      - description: Test JSON
+        in: body
+        name: test
+        required: true
+        schema:
+          $ref: '#/definitions/test.UpdateTest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/test.TestDB'
+      summary: Edit a test
+      tags:
+      - test
 swagger: "2.0"

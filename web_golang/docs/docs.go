@@ -72,7 +72,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/question_models.CreateAnswer"
+                            "$ref": "#/definitions/question.CreateAnswer"
                         }
                     }
                 ],
@@ -80,7 +80,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/question_models.AnswerDB"
+                            "$ref": "#/definitions/question.AnswerDB"
                         }
                     }
                 }
@@ -108,7 +108,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/question_models.UpdateAnswer"
+                            "$ref": "#/definitions/question.UpdateAnswer"
                         }
                     }
                 ],
@@ -116,7 +116,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/question_models.QuestionDB"
+                            "$ref": "#/definitions/question.QuestionDB"
                         }
                     }
                 }
@@ -155,7 +155,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/question_models.QuestionDB"
+                                "$ref": "#/definitions/question.QuestionDB"
                             }
                         }
                     }
@@ -177,7 +177,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/question_models.CreateQuestion"
+                            "$ref": "#/definitions/question.CreateQuestion"
                         }
                     }
                 ],
@@ -185,7 +185,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/question_models.QuestionDB"
+                            "$ref": "#/definitions/question.QuestionDB"
                         }
                     }
                 }
@@ -217,7 +217,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/question_models.QuestionDB"
+                            "$ref": "#/definitions/question.QuestionDB"
                         }
                     }
                 }
@@ -266,7 +266,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/question_models.UpdateQuestion"
+                            "$ref": "#/definitions/question.UpdateQuestion"
                         }
                     }
                 ],
@@ -274,7 +274,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/question_models.QuestionDB"
+                            "$ref": "#/definitions/question.QuestionDB"
                         }
                     }
                 }
@@ -475,10 +475,168 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/tests": {
+            "get": {
+                "description": "Get all available tests",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "test"
+                ],
+                "summary": "get tests",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "write page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "write limit number",
+                        "name": "limit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/test.TestDB"
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Create a new test",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "test"
+                ],
+                "summary": "create a new test",
+                "parameters": [
+                    {
+                        "description": "Task JSON",
+                        "name": "test",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/test.CreateTest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/test.TestDB"
+                        }
+                    }
+                }
+            }
+        },
+        "/tests/{testId}": {
+            "get": {
+                "description": "Get test by id",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "test"
+                ],
+                "summary": "get test by id",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Write test id",
+                        "name": "testId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/test.TestDB"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Delete a test by id",
+                "tags": [
+                    "test"
+                ],
+                "summary": "delete a test",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Write test id",
+                        "name": "testId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    }
+                }
+            },
+            "patch": {
+                "description": "Edit a test by id",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "test"
+                ],
+                "summary": "Edit a test",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Write test id",
+                        "name": "testId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Test JSON",
+                        "name": "test",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/test.UpdateTest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/test.TestDB"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
-        "question_models.AnswerDB": {
+        "question.AnswerDB": {
             "type": "object",
             "properties": {
                 "content": {
@@ -492,7 +650,7 @@ const docTemplate = `{
                 }
             }
         },
-        "question_models.CreateAnswer": {
+        "question.CreateAnswer": {
             "type": "object",
             "required": [
                 "content"
@@ -506,7 +664,7 @@ const docTemplate = `{
                 }
             }
         },
-        "question_models.CreateQuestion": {
+        "question.CreateQuestion": {
             "type": "object",
             "required": [
                 "materi",
@@ -521,13 +679,13 @@ const docTemplate = `{
                 }
             }
         },
-        "question_models.QuestionDB": {
+        "question.QuestionDB": {
             "type": "object",
             "properties": {
                 "answers": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/question_models.AnswerDB"
+                        "$ref": "#/definitions/question.AnswerDB"
                     }
                 },
                 "id": {
@@ -541,7 +699,7 @@ const docTemplate = `{
                 }
             }
         },
-        "question_models.UpdateAnswer": {
+        "question.UpdateAnswer": {
             "type": "object",
             "properties": {
                 "content": {
@@ -555,13 +713,83 @@ const docTemplate = `{
                 }
             }
         },
-        "question_models.UpdateQuestion": {
+        "question.UpdateQuestion": {
             "type": "object",
             "properties": {
                 "materi": {
                     "type": "integer"
                 },
                 "question": {
+                    "type": "string"
+                }
+            }
+        },
+        "task.CreateTask": {
+            "type": "object",
+            "required": [
+                "end_date",
+                "name",
+                "start_date"
+            ],
+            "properties": {
+                "end_date": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "start_date": {
+                    "type": "string"
+                }
+            }
+        },
+        "task.SetQuestion": {
+            "type": "object",
+            "required": [
+                "questions"
+            ],
+            "properties": {
+                "questions": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "task.TaskDB": {
+            "type": "object",
+            "properties": {
+                "end_date": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "questions": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "start_date": {
+                    "type": "string"
+                }
+            }
+        },
+        "task.UpdateTask": {
+            "type": "object",
+            "properties": {
+                "end_date": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "start_date": {
                     "type": "string"
                 }
             }
@@ -632,6 +860,56 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "start_date": {
+                    "type": "string"
+                }
+            }
+        },
+        "test.CreateTest": {
+            "type": "object",
+            "required": [
+                "email",
+                "name",
+                "password"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                }
+            }
+        },
+        "test.TestDB": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                }
+            }
+        },
+        "test.UpdateTest": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "password": {
                     "type": "string"
                 }
             }
