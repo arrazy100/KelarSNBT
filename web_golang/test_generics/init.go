@@ -5,7 +5,7 @@ import (
 	"main/crud_generics"
 	"os"
 
-	"github.com/gin-gonic/gin"
+	"github.com/gofiber/fiber/v2"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -37,6 +37,6 @@ func Init(client *mongo.Client, ctx context.Context) {
 	testRouteController = NewTestRouteController(testController, routeController)
 }
 
-func RouteInit(router *gin.RouterGroup) {
+func RouteInit(router fiber.Router) {
 	testRouteController.Route(router)
 }

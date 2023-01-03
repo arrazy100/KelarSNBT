@@ -2,24 +2,35 @@ package main
 
 import (
 	"log"
-	docs "main/docs"
+	"main/auth"
 	"main/question"
 	"main/task"
 	"main/test_generics"
 
-	swaggerfiles "github.com/swaggo/files"
-	ginSwagger "github.com/swaggo/gin-swagger"
+	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/swagger"
+
+	_ "main/docs"
 )
 
-func startGinServer() {
-	router := server.Group("/api")
+var (
+	router fiber.Router
+)
+
+func startFiberServer() {
+	router = server.Group("/api")
 
 	question.RouteInit(router)
 	task.RouteInit(router)
 	test_generics.RouteInit(router)
 
-	docs.SwaggerInfo.BasePath = "/api/"
-	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
+	SetAuthMiddleware()
 
-	log.Fatal(server.Run(":8080"))
+	server.Get("/api/swagger/*", swagger.HandlerDefault)
+
+	log.Fatal(server.Listen(":8080"))
+}
+
+func SetAuthMiddleware() {
+	server.Use(auth.AuthAdminMiddleware)
 }

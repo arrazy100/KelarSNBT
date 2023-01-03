@@ -2,12 +2,15 @@ package crud_generics
 
 import (
 	"context"
+	"errors"
 	"main/logs"
 	"net/http"
 	"strconv"
 	"strings"
 
-	"github.com/gin-gonic/gin"
+	"main/common"
+
+	"github.com/gofiber/fiber/v2"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -31,105 +34,143 @@ func NewCRUDControllerRepo[T any](collection *mongo.Collection, ctx context.Cont
 	}
 }
 
-func (repo *CRUDControllerRepo[T]) FindAll(ctx *gin.Context) {
+func (repo *CRUDControllerRepo[T]) FindAll(ctx *fiber.Ctx) error {
 	logs.Info("Requesting all " + repo.name)
 
-	var page = ctx.DefaultQuery("page", "1")
-	var limit = ctx.DefaultQuery("limit", "10")
+	var page = ctx.Query("page", "1")
+	var limit = ctx.Query("limit", "10")
 
 	intPage, err := strconv.Atoi(page)
 	if err != nil {
-		ctx.JSON(http.StatusBadGateway, gin.H{"status": "fail", "message": err.Error()})
+		ctx.SendStatus(http.StatusBadGateway)
+		ctx.JSON(fiber.Map{"status": "fail", "message": err.Error()})
 		logs.Error(err.Error())
 
-		return
+		return err
 	}
 
 	intLimit, err := strconv.Atoi(limit)
 	if err != nil {
-		ctx.JSON(http.StatusBadGateway, gin.H{"status": "fail", "message": err.Error()})
+		ctx.SendStatus(http.StatusBadGateway)
+		ctx.JSON(fiber.Map{"status": "fail", "message": err.Error()})
 		logs.Error(err.Error())
 
-		return
+		return err
 	}
 
 	datas, err := FindAllService[T](repo.collection, repo.ctx, intPage, intLimit)
 	if err != nil {
-		ctx.JSON(http.StatusBadGateway, gin.H{"status": "fail", "message": err.Error()})
+		ctx.SendStatus(http.StatusBadGateway)
+		ctx.JSON(fiber.Map{"status": "fail", "message": err.Error()})
 		logs.Error(err.Error())
 
-		return
+		return err
 	}
 	logs.Debug("Getting all " + repo.name + " from db")
 
-	ctx.JSON(http.StatusOK, gin.H{"status": "success", "results": len(datas), "data": datas})
+	ctx.SendStatus(http.StatusOK)
+	ctx.JSON(fiber.Map{"status": "success", "results": len(datas), "data": datas})
+
+	return nil
 }
 
-func (repo *CRUDControllerRepo[T]) Create(ctx *gin.Context) {
+func (repo *CRUDControllerRepo[T]) Create(ctx *fiber.Ctx) error {
 	logs.Info("User requesting to create a " + repo.singleName)
 
 	data := repo.createModelConstructor()
 
-	logs.Debug("Validating " + repo.singleName + " from JSON")
-	if err := ctx.ShouldBindJSON(&data); err != nil {
-		ctx.JSON(http.StatusBadRequest, err.Error())
+	logs.Debug("Parsing " + repo.singleName + " from JSON")
+	if err := ctx.BodyParser(&data); err != nil {
+		ctx.SendStatus(http.StatusBadRequest)
+		ctx.JSON(fiber.Map{"status": "fail", "message": err.Error()})
 		logs.Warning(err.Error())
 
-		return
+		return err
+	}
+
+	logs.Debug("Validating " + repo.singleName + " from JSON")
+	errs := common.Validate(data)
+	if errs != nil {
+		ctx.Status(http.StatusBadRequest).JSON(errs)
+
+		encoded, _ := ctx.App().Config().JSONEncoder(errs)
+		logs.Error("Failed to validate " + repo.singleName + " from JSON. " + string(encoded))
+
+		return errors.New(string(encoded))
 	}
 
 	newData, err := CreateService[T](repo.collection, repo.ctx, data)
 	logs.DebugObject("Inserting new "+repo.singleName+" to database.", data)
 
 	if err != nil {
-		ctx.JSON(http.StatusBadGateway, gin.H{"status": "fail", "message": err.Error()})
-		logs.Error(err.Error())
+		ctx.SendStatus(http.StatusBadGateway)
+		ctx.JSON(fiber.Map{"status": "fail", "message": err.Error()})
 
-		return
+		return err
 	}
 	logs.DebugObject("New "+repo.singleName+" saved.", data)
 
-	ctx.JSON(http.StatusCreated, gin.H{"status": "success", "data": newData})
+	ctx.SendStatus(http.StatusCreated)
+	ctx.JSON(fiber.Map{"status": "success", "data": newData})
+
+	return nil
 }
 
-func (repo *CRUDControllerRepo[T]) FindById(ctx *gin.Context) {
+func (repo *CRUDControllerRepo[T]) FindById(ctx *fiber.Ctx) error {
 	logs.Info("Requsting a " + repo.singleName + "  by id")
-	objectId := ctx.Param(repo.singleName + "Id")
+	objectId := ctx.Params(repo.singleName + "Id")
 
 	data, err := FindByIdService[T](repo.collection, repo.ctx, objectId)
 	logs.Debug("Getting a " + repo.singleName + " from db by id")
 
 	if err != nil {
 		if strings.Contains(err.Error(), "No document") {
-			ctx.JSON(http.StatusNotFound, gin.H{"status": "fail", "message": err.Error()})
+			ctx.SendStatus(http.StatusNotFound)
+			ctx.JSON(fiber.Map{"status": "fail", "message": err.Error()})
 			logs.Error(err.Error())
 
-			return
+			return err
 		}
 
-		ctx.JSON(http.StatusBadGateway, gin.H{"status": "fail", "message": err.Error()})
+		ctx.SendStatus(http.StatusBadGateway)
+		ctx.JSON(fiber.Map{"status": "fail", "message": err.Error()})
 		logs.Error(err.Error())
 
-		return
+		return err
 	}
 
-	ctx.JSON(http.StatusOK, gin.H{"status": "success", "data": data})
+	ctx.SendStatus(http.StatusOK)
+	ctx.JSON(fiber.Map{"status": "success", "data": data})
 	logs.Debug("Success finding a " + repo.singleName)
+
+	return nil
 }
 
-func (repo *CRUDControllerRepo[T]) Update(ctx *gin.Context) {
-	logs.Info("User requesting to create a " + repo.singleName)
+func (repo *CRUDControllerRepo[T]) Update(ctx *fiber.Ctx) error {
+	logs.Info("User requesting to update a " + repo.singleName)
 
-	objectId := ctx.Param(repo.singleName + "Id")
+	objectId := ctx.Params(repo.singleName + "Id")
 
 	data := repo.updateModelConstructor()
 
-	logs.Debug("Validating " + repo.singleName + " from JSON")
-	if err := ctx.ShouldBindJSON(&data); err != nil {
-		ctx.JSON(http.StatusBadRequest, err.Error())
+	logs.Debug("Parsing " + repo.singleName + " from JSON")
+	if err := ctx.BodyParser(&data); err != nil {
+		ctx.SendStatus(http.StatusBadRequest)
+		ctx.JSON(fiber.Map{"status": "fail", "message": err.Error()})
 		logs.Warning(err.Error())
 
-		return
+		return err
+	}
+
+	logs.Debug("Validating " + repo.singleName + " from JSON")
+	errs := common.Validate(data)
+	if errs != nil {
+		ctx.Status(http.StatusBadRequest).JSON(errs)
+
+		encoded, _ := ctx.App().Config().JSONEncoder(errs)
+		logs.Error("Failed to validate " + repo.singleName + " from JSON. " + string(encoded))
+
+		return errors.New(string(encoded))
 	}
 
 	updatedData, err := UpdateService[T](repo.collection, repo.ctx, objectId, data)
@@ -137,45 +178,54 @@ func (repo *CRUDControllerRepo[T]) Update(ctx *gin.Context) {
 
 	if err != nil {
 		if strings.Contains(err.Error(), "not exists") {
-			ctx.JSON(http.StatusNotFound, gin.H{"status": "fail", "message": err.Error()})
+			ctx.SendStatus(http.StatusNotFound)
+			ctx.JSON(fiber.Map{"status": "fail", "message": err.Error()})
 			logs.Error(err.Error())
 
-			return
+			return err
 		}
 
-		ctx.JSON(http.StatusBadGateway, gin.H{"status": "fail", "message": err.Error()})
+		ctx.SendStatus(http.StatusBadGateway)
+		ctx.JSON(fiber.Map{"status": "fail", "message": err.Error()})
 		logs.Error(err.Error())
 
-		return
+		return err
 	}
 	logs.DebugObject("A "+repo.singleName+" is updated.", data)
 
-	ctx.JSON(http.StatusOK, gin.H{"status": "success", "data": updatedData})
+	ctx.SendStatus(http.StatusOK)
+	ctx.JSON(fiber.Map{"status": "success", "data": updatedData})
+
+	return nil
 }
 
-func (repo *CRUDControllerRepo[T]) Delete(ctx *gin.Context) {
+func (repo *CRUDControllerRepo[T]) Delete(ctx *fiber.Ctx) error {
 	logs.Info("Requsting to delete a " + repo.singleName + " by id")
-	objectId := ctx.Param(repo.singleName + "Id")
+	objectId := ctx.Params(repo.singleName + "Id")
 
 	err := DeleteService[T](repo.collection, repo.ctx, objectId)
 	logs.Debug("Deleting a " + repo.singleName + " by id")
 
 	if err != nil {
 		if strings.Contains(err.Error(), "exists") {
-			ctx.JSON(http.StatusNotFound, gin.H{"status": "fail", "message": err.Error()})
+			ctx.SendStatus(http.StatusNotFound)
+			ctx.JSON(fiber.Map{"status": "fail", "message": err.Error()})
 			logs.Error(err.Error())
 
-			return
+			return err
 		}
 
-		ctx.JSON(http.StatusBadGateway, gin.H{"status": "fail", "message": err.Error()})
+		ctx.SendStatus(http.StatusBadGateway)
+		ctx.JSON(fiber.Map{"status": "fail", "message": err.Error()})
 		logs.Error(err.Error())
 
-		return
+		return err
 	}
 
-	ctx.JSON(http.StatusNoContent, nil)
+	ctx.SendStatus(http.StatusNoContent)
 	logs.Debug("Success deleting a " + repo.singleName)
+
+	return nil
 }
 
 func (repo *CRUDControllerRepo[T]) GetCollection() *mongo.Collection {
@@ -184,4 +234,8 @@ func (repo *CRUDControllerRepo[T]) GetCollection() *mongo.Collection {
 
 func (repo *CRUDControllerRepo[T]) GetContext() context.Context {
 	return repo.ctx
+}
+
+func (repo *CRUDControllerRepo[T]) GetSingleName() string {
+	return repo.singleName
 }

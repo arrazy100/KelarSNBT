@@ -26,7 +26,14 @@ router.post('/login', async (req, res) => {
     const { username, password } = req.body;
 
     login(username, password).then(token => {
-        if (token) res.status(200).json({accessToken: token});
+        if (token) {
+            res.cookie("accessToken", token, {
+                secure: true,
+                httpOnly: true,
+                maxAge: 900000
+            })
+            res.status(200).json({accessToken: token});
+        }
         else res.status(400).json({message: 'username atau password salah'});
     }).catch(err => {
         res.status(500).json({message: err.message});

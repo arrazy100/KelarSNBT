@@ -14,6 +14,12 @@ package main
 
 // @host      localhost:3001
 // @BasePath  /api/
+
+// @securityDefinitions.apikey ApiKeyAuth
+// @in header
+// @name Authorization
+
 func main() {
-	startGinServer()
+	startFiberServer()
+	outputFile.Close()
 }

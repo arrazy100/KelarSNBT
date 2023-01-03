@@ -11,9 +11,9 @@ type TestDB struct {
 }
 
 type CreateTest struct {
-	Name     string `json:"name" bson:"name" binding:"required"`
-	Email    string `json:"email" bson:"email" binding:"required"`
-	Password string `json:"password" bson:"password" binding:"required"`
+	Name     string `json:"name" bson:"name" validate:"required"`
+	Email    string `json:"email" bson:"email" validate:"required"`
+	Password string `json:"password" bson:"password" validate:"required"`
 }
 
 type UpdateTest struct {

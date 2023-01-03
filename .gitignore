@@ -132,3 +132,5 @@ dist
 
 web_nodejs/keys/*
 web_golang/tmp/*
+web_golang/*.log
+web_golang/keys/*

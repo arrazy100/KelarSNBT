@@ -3,7 +3,7 @@ package test_generics
 import (
 	"main/crud_generics"
 
-	"github.com/gin-gonic/gin"
+	"github.com/gofiber/fiber/v2"
 )
 
 type TestRouteController[T any] struct {
@@ -15,8 +15,8 @@ func NewTestRouteController[T any](testController TestController[T], genericRout
 	return TestRouteController[T]{testController, genericRoute}
 }
 
-func (repo *TestRouteController[T]) Route(router *gin.RouterGroup) {
+func (repo *TestRouteController[T]) Route(router fiber.Router) {
 	repo.genericRoute.Route("/tests", router)
 
-	router.PATCH("/tests/setQuestions/:testId", repo.testController.SetData)
+	router.Patch("/tests/setQuestions/:testId", repo.testController.SetData)
 }

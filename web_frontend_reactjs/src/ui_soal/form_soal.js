@@ -57,6 +57,13 @@ function FormSoalComponent(props) {
         hide ? setHide(false) : setHide(true);
     }
 
+    // useEffect(() => {
+    //     fetch('http://localhost:3000/auth/lists')
+    //         .then(response => response.json())
+    //         .then(obj => console.log(obj))
+    //         .catch((err) => console.log(err))
+    // })
+
     return (
         <>
             <SunEditor

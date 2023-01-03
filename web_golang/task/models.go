@@ -15,9 +15,9 @@ type TaskDB struct {
 }
 
 type CreateTask struct {
-	Name      string    `json:"name" bson:"name" binding:"required"`
-	StartDate time.Time `json:"start_date" bson:"start_date" binding:"required"`
-	EndDate   time.Time `json:"end_date" bson:"end_date" binding:"required"`
+	Name      string    `json:"name" bson:"name" validate:"required"`
+	StartDate time.Time `json:"start_date" bson:"start_date" validate:"required"`
+	EndDate   time.Time `json:"end_date" bson:"end_date" validate:"required"`
 }
 
 type UpdateTask struct {

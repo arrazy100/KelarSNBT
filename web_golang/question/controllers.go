@@ -1,11 +1,14 @@
 package question
 
 import (
+	"errors"
+	"main/common"
 	"main/crud_generics"
+	"main/logs"
 	"net/http"
 	"strings"
 
-	"github.com/gin-gonic/gin"
+	"github.com/gofiber/fiber/v2"
 )
 
 type QuestionController[T any] struct {
@@ -27,8 +30,11 @@ func NewQuestionController[T any](genericController crud_generics.CRUDController
 // @Param limit query int false "write limit number"
 // @Success 200 {array} QuestionDB
 // @Router /questions [get]
-func (repo *QuestionController[T]) FindAll(ctx *gin.Context) {
+// @Security ApiKeyAuth
+func (repo *QuestionController[T]) FindAll(ctx *fiber.Ctx) error {
 	repo.genericController.FindAll(ctx)
+
+	return nil
 }
 
 // GetQuestionById godoc
@@ -41,8 +47,10 @@ func (repo *QuestionController[T]) FindAll(ctx *gin.Context) {
 // @Param questionId path string true "Write question id"
 // @Success 200 {object} QuestionDB
 // @Router /questions/{questionId} [get]
-func (repo *QuestionController[T]) FindById(ctx *gin.Context) {
+func (repo *QuestionController[T]) FindById(ctx *fiber.Ctx) error {
 	repo.genericController.FindById(ctx)
+
+	return nil
 }
 
 // PostQuestion godoc
@@ -54,8 +62,10 @@ func (repo *QuestionController[T]) FindById(ctx *gin.Context) {
 // @Param question body CreateQuestion true "Question JSON"
 // @Success 200 {object} QuestionDB
 // @Router /questions [post]
-func (repo *QuestionController[T]) Create(ctx *gin.Context) {
+func (repo *QuestionController[T]) Create(ctx *fiber.Ctx) error {
 	repo.genericController.Create(ctx)
+
+	return nil
 }
 
 // PatchQuestion godoc
@@ -68,8 +78,10 @@ func (repo *QuestionController[T]) Create(ctx *gin.Context) {
 // @Param question body UpdateQuestion true "Question JSON"
 // @Success 200 {object} QuestionDB
 // @Router /questions/{questionId} [patch]
-func (repo *QuestionController[T]) Update(ctx *gin.Context) {
+func (repo *QuestionController[T]) Update(ctx *fiber.Ctx) error {
 	repo.genericController.Update(ctx)
+
+	return nil
 }
 
 // DeleteQuestion godoc
@@ -80,8 +92,10 @@ func (repo *QuestionController[T]) Update(ctx *gin.Context) {
 // @Param questionId path string true "Write question id"
 // @Success 204
 // @Router /questions/{questionId} [delete]
-func (repo *QuestionController[T]) Delete(ctx *gin.Context) {
+func (repo *QuestionController[T]) Delete(ctx *fiber.Ctx) error {
 	repo.genericController.Delete(ctx)
+
+	return nil
 }
 
 // PostAnswer godoc
@@ -94,31 +108,53 @@ func (repo *QuestionController[T]) Delete(ctx *gin.Context) {
 // @Param answer body CreateAnswer true "Answer JSON"
 // @Success 200 {object} AnswerDB
 // @Router /answers/{questionId} [post]
-func (repo *QuestionController[T]) CreateAnswer(ctx *gin.Context) {
-	questionId := ctx.Param("questionId")
+func (repo *QuestionController[T]) CreateAnswer(ctx *fiber.Ctx) error {
+	logs.Info("User requesting to create an answer")
 
+	questionId := ctx.Params("questionId")
+
+	logs.Debug("Parsing answer from JSON")
 	var answer *CreateAnswer
-	if err := ctx.ShouldBindJSON(&answer); err != nil {
-		ctx.JSON(http.StatusBadGateway, gin.H{"status": "fail", "message": err.Error()})
+	if err := ctx.BodyParser(&answer); err != nil {
+		ctx.SendStatus(http.StatusBadGateway)
+		ctx.JSON(fiber.Map{"status": "fail", "message": err.Error()})
 
-		return
+		return err
+	}
+
+	logs.Debug("Validating answer from JSON")
+	errs := common.Validate(answer)
+	if errs != nil {
+		ctx.Status(http.StatusBadRequest).JSON(errs)
+
+		encoded, _ := ctx.App().Config().JSONEncoder(errs)
+		logs.Error("Failed to validate answer from JSON. " + string(encoded))
+
+		return errors.New(string(encoded))
 	}
 
 	updatedQuestion, err := CreateAnswerService(repo.genericController.GetCollection(), repo.genericController.GetContext(), questionId, answer)
+	logs.DebugObject("Saving answer to database.", answer)
 
 	if err != nil {
 		if strings.Contains(err.Error(), "not exists") {
-			ctx.JSON(http.StatusNotFound, gin.H{"status": "fail", "message": err.Error()})
+			ctx.SendStatus(http.StatusNotFound)
+			ctx.JSON(fiber.Map{"status": "fail", "message": err.Error()})
 
-			return
+			return err
 		}
 
-		ctx.JSON(http.StatusBadGateway, gin.H{"status": "fail", "message": err.Error()})
+		ctx.SendStatus(http.StatusBadGateway)
+		ctx.JSON(fiber.Map{"status": "fail", "message": err.Error()})
 
-		return
+		return err
 	}
+	logs.DebugObject("Answer is saved.", answer)
 
-	ctx.JSON(http.StatusOK, gin.H{"status": "success", "data": updatedQuestion})
+	ctx.SendStatus(http.StatusOK)
+	ctx.JSON(fiber.Map{"status": "success", "data": updatedQuestion})
+
+	return nil
 }
 
 // PatchAnswer godoc
@@ -131,31 +167,53 @@ func (repo *QuestionController[T]) CreateAnswer(ctx *gin.Context) {
 // @Param question body UpdateAnswer true "Answer JSON"
 // @Success 200 {object} QuestionDB
 // @Router /answers/{questionId} [patch]
-func (repo *QuestionController[T]) UpdateAnswer(ctx *gin.Context) {
-	questionId := ctx.Param("questionId")
+func (repo *QuestionController[T]) UpdateAnswer(ctx *fiber.Ctx) error {
+	logs.Info("User requesting to update an answer")
 
+	questionId := ctx.Params("questionId")
+
+	logs.Debug("Parsing answer from JSON")
 	var answer *UpdateAnswer
-	if err := ctx.ShouldBindJSON(&answer); err != nil {
-		ctx.JSON(http.StatusBadGateway, gin.H{"status": "fail", "message": err.Error()})
+	if err := ctx.BodyParser(&answer); err != nil {
+		ctx.SendStatus(http.StatusBadGateway)
+		ctx.JSON(fiber.Map{"status": "fail", "message": err.Error()})
 
-		return
+		return err
+	}
+
+	logs.Debug("Validating answer from JSON")
+	errs := common.Validate(answer)
+	if errs != nil {
+		ctx.Status(http.StatusBadRequest).JSON(errs)
+
+		encoded, _ := ctx.App().Config().JSONEncoder(errs)
+		logs.Error("Failed to validate answer from JSON. " + string(encoded))
+
+		return errors.New(string(encoded))
 	}
 
 	updatedQuestion, err := UpdateAnswerService(repo.genericController.GetCollection(), repo.genericController.GetContext(), questionId, answer)
+	logs.DebugObject("Updating answer to database.", answer)
 
 	if err != nil {
 		if strings.Contains(err.Error(), "not exists") {
-			ctx.JSON(http.StatusNotFound, gin.H{"status": "fail", "message": err.Error()})
+			ctx.SendStatus(http.StatusNotFound)
+			ctx.JSON(fiber.Map{"status": "fail", "message": err.Error()})
 
-			return
+			return err
 		}
 
-		ctx.JSON(http.StatusBadGateway, gin.H{"status": "fail", "message": err.Error()})
+		ctx.SendStatus(http.StatusBadGateway)
+		ctx.JSON(fiber.Map{"status": "fail", "message": err.Error()})
 
-		return
+		return err
 	}
+	logs.DebugObject("Answer is updated.", answer)
 
-	ctx.JSON(http.StatusOK, gin.H{"status": "success", "data": updatedQuestion})
+	ctx.SendStatus(http.StatusOK)
+	ctx.JSON(fiber.Map{"status": "success", "data": updatedQuestion})
+
+	return nil
 }
 
 // DeleteAnswer godoc
@@ -166,16 +224,23 @@ func (repo *QuestionController[T]) UpdateAnswer(ctx *gin.Context) {
 // @Param answerId path string true "Write answer id"
 // @Success 204
 // @Router /answers/{answerId} [delete]
-func (repo *QuestionController[T]) DeleteAnswer(ctx *gin.Context) {
-	answerId := ctx.Param("answerId")
+func (repo *QuestionController[T]) DeleteAnswer(ctx *fiber.Ctx) error {
+	logs.Info("User requesting to delete an answer")
+
+	answerId := ctx.Params("answerId")
 
 	err := DeleteAnswerService(repo.genericController.GetCollection(), repo.genericController.GetContext(), answerId)
+	logs.Debug("Deleting an answer by id")
 
 	if err != nil {
-		ctx.JSON(http.StatusBadGateway, gin.H{"status": "fail", "message": err.Error()})
+		ctx.SendStatus(http.StatusBadGateway)
+		ctx.JSON(fiber.Map{"status": "fail", "message": err.Error()})
 
-		return
+		return err
 	}
+	logs.Debug("Success deleting an answer")
 
-	ctx.JSON(http.StatusNoContent, nil)
+	ctx.SendStatus(http.StatusNoContent)
+
+	return nil
 }

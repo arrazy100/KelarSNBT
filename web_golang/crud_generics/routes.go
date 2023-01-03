@@ -1,7 +1,7 @@
 package crud_generics
 
 import (
-	"github.com/gin-gonic/gin"
+	"github.com/gofiber/fiber/v2"
 )
 
 type CRUDRouteController[T any] struct {
@@ -12,12 +12,12 @@ func NewCRUDRouteController[T any](crudController CRUDControllerRepo[T]) CRUDRou
 	return CRUDRouteController[T]{crudController}
 }
 
-func (repo *CRUDRouteController[T]) Route(urlPath string, cr *gin.RouterGroup) {
+func (repo *CRUDRouteController[T]) Route(urlPath string, cr fiber.Router) {
 	router := cr.Group(urlPath)
 
-	router.GET("/", repo.controllerRepo.FindAll)
-	router.POST("/", repo.controllerRepo.Create)
-	router.GET("/:"+repo.controllerRepo.singleName+"Id", repo.controllerRepo.FindById)
-	router.PATCH("/:"+repo.controllerRepo.singleName+"Id", repo.controllerRepo.Update)
-	router.DELETE("/:"+repo.controllerRepo.singleName+"Id", repo.controllerRepo.Delete)
+	router.Get("/", repo.controllerRepo.FindAll)
+	router.Post("/", repo.controllerRepo.Create)
+	router.Get("/:"+repo.controllerRepo.singleName+"Id", repo.controllerRepo.FindById)
+	router.Patch("/:"+repo.controllerRepo.singleName+"Id", repo.controllerRepo.Update)
+	router.Delete("/:"+repo.controllerRepo.singleName+"Id", repo.controllerRepo.Delete)
 }

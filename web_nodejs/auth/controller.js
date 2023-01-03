@@ -51,7 +51,7 @@ const generateToken = (data) => {
     const privateKey = fs.readFileSync(process.env.PRIVATE_KEY);
 
     const token = jwt.sign({
-        data: data
+        data
     }, privateKey, { expiresIn: parseInt(process.env.TOKEN_EXPIRES), algorithm: process.env.JWT_ALGORITHM });
 
     return token;

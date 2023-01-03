@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/gin-gonic/gin"
+	"github.com/gofiber/fiber/v2"
 )
 
 type TestController[T any] struct {
@@ -16,29 +16,35 @@ func NewTestController[T any](genericController crud_generics.CRUDControllerRepo
 	return TestController[T]{genericController}
 }
 
-func (repo *TestController[T]) SetData(ctx *gin.Context) {
-	testId := ctx.Param("testId")
+func (repo *TestController[T]) SetData(ctx *fiber.Ctx) error {
+	testId := ctx.Params("testId")
 
 	var data *SetData
-	if err := ctx.ShouldBindJSON(&data); err != nil {
-		ctx.JSON(http.StatusBadGateway, gin.H{"status": "fail", "message": err.Error()})
+	if err := ctx.BodyParser(&data); err != nil {
+		ctx.SendStatus(http.StatusBadGateway)
+		ctx.JSON(fiber.Map{"status": "fail", "message": err.Error()})
 
-		return
+		return err
 	}
 
 	updateddData, err := SetDataService[T](repo.genericController.GetCollection(), repo.genericController.GetContext(), testId, data)
 
 	if err != nil {
 		if strings.Contains(err.Error(), "not exists") {
-			ctx.JSON(http.StatusNotFound, gin.H{"status": "fail", "message": err.Error()})
+			ctx.SendStatus(http.StatusNotFound)
+			ctx.JSON(fiber.Map{"status": "fail", "message": err.Error()})
 
-			return
+			return err
 		}
 
-		ctx.JSON(http.StatusBadGateway, gin.H{"status": "fail", "message": err.Error()})
+		ctx.SendStatus(http.StatusBadGateway)
+		ctx.JSON(fiber.Map{"status": "fail", "message": err.Error()})
 
-		return
+		return err
 	}
 
-	ctx.JSON(http.StatusOK, gin.H{"status": "success", "data": updateddData})
+	ctx.SendStatus(http.StatusOK)
+	ctx.JSON(fiber.Map{"status": "success", "data": updateddData})
+
+	return nil
 }

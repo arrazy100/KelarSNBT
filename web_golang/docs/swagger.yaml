@@ -204,6 +204,8 @@ paths:
             items:
               $ref: '#/definitions/question.QuestionDB'
             type: array
+      security:
+      - ApiKeyAuth: []
       summary: get questions
       tags:
       - question
@@ -414,4 +416,9 @@ paths:
       summary: set questions for a task
       tags:
       - task
+securityDefinitions:
+  ApiKeyAuth:
+    in: header
+    name: Authorization
+    type: apiKey
 swagger: "2.0"

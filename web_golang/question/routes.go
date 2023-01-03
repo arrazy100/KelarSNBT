@@ -1,7 +1,7 @@
 package question
 
 import (
-	"github.com/gin-gonic/gin"
+	"github.com/gofiber/fiber/v2"
 )
 
 type QuestionRouteController[T any] struct {
@@ -12,20 +12,20 @@ func NewQuestionRouteController[T any](questionController QuestionController[T])
 	return QuestionRouteController[T]{questionController}
 }
 
-func (repo *QuestionRouteController[T]) QuestionRoute(rg *gin.RouterGroup) {
+func (repo *QuestionRouteController[T]) QuestionRoute(rg fiber.Router) {
 	router := rg.Group("/questions")
 
-	router.GET("/", repo.questionController.FindAll)
-	router.GET("/:questionId", repo.questionController.FindById)
-	router.POST("/", repo.questionController.Create)
-	router.PATCH("/:questionId", repo.questionController.Update)
-	router.DELETE("/:questionId", repo.questionController.Delete)
+	router.Get("/", repo.questionController.FindAll)
+	router.Get("/:questionId", repo.questionController.FindById)
+	router.Post("/", repo.questionController.Create)
+	router.Patch("/:questionId", repo.questionController.Update)
+	router.Delete("/:questionId", repo.questionController.Delete)
 }
 
-func (repo *QuestionRouteController[T]) AnswerRoute(rg *gin.RouterGroup) {
+func (repo *QuestionRouteController[T]) AnswerRoute(rg fiber.Router) {
 	router := rg.Group("/answers/")
 
-	router.POST("/:questionId", repo.questionController.CreateAnswer)
-	router.PATCH("/:questionId", repo.questionController.UpdateAnswer)
-	router.DELETE("/:answerId", repo.questionController.DeleteAnswer)
+	router.Post("/:questionId", repo.questionController.CreateAnswer)
+	router.Patch("/:questionId", repo.questionController.UpdateAnswer)
+	router.Delete("/:answerId", repo.questionController.DeleteAnswer)
 }

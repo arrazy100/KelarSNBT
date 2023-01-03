@@ -9,7 +9,7 @@ type AnswerDB struct {
 }
 
 type CreateAnswer struct {
-	Content       string `json:"content" bson:"content" binding:"required"`
+	Content       string `json:"content" bson:"content" validate:"required"`
 	CorrectAnswer bool   `json:"correct_answer,omitempty" bson:"correct_answer,omitempty"`
 }
 
@@ -27,8 +27,8 @@ type QuestionDB struct {
 }
 
 type CreateQuestion struct {
-	Materi   int    `json:"materi" bson:"materi" binding:"required"`
-	Question string `json:"question" bson:"question" binding:"required"`
+	Materi   int    `json:"materi" bson:"materi" validate:"required"`
+	Question string `json:"question" bson:"question" validate:"required"`
 }
 
 type UpdateQuestion struct {
